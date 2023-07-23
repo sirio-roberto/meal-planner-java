@@ -1,4 +1,6 @@
-package mealplanner;
+package mealplanner.entities;
+
+import mealplanner.entities.Ingredient;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class Meal {
                 getIngredientsList());
     }
 
-    enum Category {
+    public enum Category {
         BREAKFAST, LUNCH, DINNER;
 
         @Override

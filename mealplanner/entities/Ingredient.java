@@ -1,4 +1,4 @@
-package mealplanner;
+package mealplanner.entities;
 
 public class Ingredient {
     private String name;
