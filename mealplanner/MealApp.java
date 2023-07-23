@@ -10,7 +10,7 @@ import java.util.*;
 public class MealApp {
     private HashSet<Meal> meals;
     private boolean appRunning;
-    private HashMap<String, Command> commands;
+    private final HashMap<String, Command> commands;
     public InputHandler inputHandler = new InputHandler();
 
     public MealApp() {
@@ -24,7 +24,9 @@ public class MealApp {
     }
 
     public void executeCommand(String action) {
-        commands.get(action).execute();
+        if (commands.containsKey(action)) {
+            commands.get(action).execute();
+        }
     }
 
     public void run() {
@@ -58,10 +60,24 @@ public class MealApp {
         public void execute() {
             System.out.println("Which meal do you want to add (breakfast, lunch, dinner)?");
             String categoryStr = inputHandler.getNextString();
+            while (Utils.isInvalidCategory(categoryStr)) {
+                System.out.println("Wrong meal category! Choose from: breakfast, lunch, dinner.");
+                categoryStr = inputHandler.getNextString();
+            }
+
             System.out.println("Input the meal's name:");
             String name = inputHandler.getNextString();
+            while (Utils.isInvalidName(name)) {
+                System.out.println("Wrong format. Use letters only!");
+                name = inputHandler.getNextString();
+            }
+
             System.out.println("Input the ingredients:");
             String ingredientsStr = inputHandler.getNextString();
+            while (Utils.areInvalidNames(ingredientsStr)) {
+                System.out.println("Wrong format. Use letters only!");
+                ingredientsStr = inputHandler.getNextString();
+            }
 
             Meal.Category category = Meal.Category.valueOf(categoryStr.toUpperCase());
             List<Ingredient> ingredients = Utils.getIngredientsFromStr(ingredientsStr);
@@ -75,11 +91,15 @@ public class MealApp {
     class ShowCommand implements Command {
         @Override
         public void execute() {
-            for (Meal meal: meals) {
+            if (meals.isEmpty()) {
+                System.out.println("No meals saved. Add a meal first.");
+            } else {
+                for (Meal meal : meals) {
+                    System.out.println();
+                    System.out.println(meal);
+                }
                 System.out.println();
-                System.out.println(meal);
             }
-            System.out.println();
         }
     }
 

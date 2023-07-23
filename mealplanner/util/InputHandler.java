@@ -10,7 +10,7 @@ public class InputHandler {
 
     public String getNextString() {
         String input = scanner.nextLine();
-        return input != null ? input : "";
+        return input != null ? input.trim() : "";
     }
 
     public int getNextInt() {
