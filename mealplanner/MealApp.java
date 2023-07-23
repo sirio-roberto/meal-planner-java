@@ -19,6 +19,8 @@ public class MealApp {
 
         commands = new LinkedHashMap<>();
         commands.put("add", new AddCommand());
+        commands.put("show", new ShowCommand());
+        commands.put("exit", new ExitCommand());
     }
 
     public void executeCommand(String action) {
@@ -52,7 +54,6 @@ public class MealApp {
     }
 
     class AddCommand implements Command {
-
         @Override
         public void execute() {
             System.out.println("Which meal do you want to add (breakfast, lunch, dinner)?");
@@ -68,6 +69,25 @@ public class MealApp {
             meals.add(meal);
 
             System.out.println("The meal has been added!");
+        }
+    }
+
+    class ShowCommand implements Command {
+        @Override
+        public void execute() {
+            for (Meal meal: meals) {
+                System.out.println();
+                System.out.println(meal);
+            }
+            System.out.println();
+        }
+    }
+
+    class ExitCommand implements Command{
+        @Override
+        public void execute() {
+            System.out.println("Bye!");
+            appRunning = false;
         }
     }
 }
