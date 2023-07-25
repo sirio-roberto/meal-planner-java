@@ -15,6 +15,18 @@ public class Meal {
         this.ingredients = ingredients;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public List<Ingredient> getIngredients() {
+        return ingredients;
+    }
+
     private String getIngredientsList() {
         StringBuilder builder = new StringBuilder("Ingredients:");
         ingredients.forEach(i -> builder.append("\n").append(i));

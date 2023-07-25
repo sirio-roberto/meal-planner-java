@@ -2,6 +2,7 @@ package mealplanner;
 
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
+import mealplanner.util.Database;
 import mealplanner.util.InputHandler;
 import mealplanner.util.Utils;
 
@@ -12,9 +13,11 @@ public class MealApp {
     private boolean appRunning;
     private final HashMap<String, Command> commands;
     public InputHandler inputHandler = new InputHandler();
+    private Database db;
 
     public MealApp() {
         this.meals = new LinkedHashSet<>();
+        db = new Database();
         appRunning = false;
 
         commands = new LinkedHashMap<>();
@@ -83,6 +86,7 @@ public class MealApp {
             List<Ingredient> ingredients = Utils.getIngredientsFromStr(ingredientsStr);
             Meal meal = new Meal(name, category, ingredients);
             meals.add(meal);
+            db.insertMeal(meal);
 
             System.out.println("The meal has been added!");
         }
