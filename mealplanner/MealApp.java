@@ -16,8 +16,9 @@ public class MealApp {
     private Database db;
 
     public MealApp() {
-        this.meals = new LinkedHashSet<>();
         db = new Database();
+
+        this.meals = db.getAllMeals();
         appRunning = false;
 
         commands = new LinkedHashMap<>();

@@ -4,6 +4,9 @@ import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class Database {
@@ -97,9 +100,69 @@ public class Database {
             }
 
             st.close();
+            closeConnection();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    public HashSet<Meal> getAllMeals() {
+        HashMap<Ingredient, Integer> ingredientsMap = getAllIngredients();
+
+        HashSet<Meal> meals = new LinkedHashSet<>();
+
+        String query = """
+                SELECT meal_id, meal, category
+                FROM meals
+                ORDER BY meal_id;""";
+
+        HashMap<Ingredient, Integer> map = new HashMap<>();
+        try {
+            PreparedStatement st = getConn().prepareStatement(query);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                List<Ingredient> ingredientList = findIngredientsByMealId(rs.getInt(1), ingredientsMap);
+
+                String name = rs.getString(2);
+                Meal.Category category = Meal.Category.valueOf(rs.getString(3));
+
+                Meal meal = new Meal(name, category, ingredientList);
+                meals.add(meal);
+            }
+            closeStatement(st);
+            closeConnection();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return meals;
+    }
+
+    private List<Ingredient> findIngredientsByMealId(int mealId, HashMap<Ingredient, Integer> ingredientsMap) {
+        return ingredientsMap.keySet().stream()
+                .filter(k -> ingredientsMap.get(k) == mealId)
+                .toList();
+    }
+
+    private HashMap<Ingredient, Integer> getAllIngredients() {
+        HashMap<Ingredient, Integer> map = new HashMap<>();
+
+        String query = """
+                SELECT ingredient, meal_id
+                FROM ingredients
+                ORDER BY ingredient_id;""";
+
+        try {
+            PreparedStatement st = getConn().prepareStatement(query);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Ingredient ingredient = new Ingredient(rs.getString(1));
+                map.put(ingredient, rs.getInt(2));
+            }
+            closeStatement(st);
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return map;
     }
 
     public void closeConnection() {
