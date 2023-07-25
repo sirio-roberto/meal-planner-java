@@ -38,7 +38,7 @@ public class Database {
     private void createIngredientsTable() throws SQLException {
         String query = """
                 CREATE TABLE IF NOT EXISTS ingredients (
-                    ingredient_id SERIAL PRIMARY KEY,
+                    ingredient_id integer PRIMARY KEY,
                     ingredient VARCHAR(100) NOT NULL,
                     meal_id integer NOT NULL
                 );""";
@@ -51,7 +51,7 @@ public class Database {
     private void createMealsTable() throws SQLException {
         String query = """
                 CREATE TABLE IF NOT EXISTS meals (
-                    meal_id SERIAL PRIMARY KEY,
+                    meal_id integer PRIMARY KEY,
                     meal VARCHAR(100) NOT NULL,
                     category VARCHAR(20) NOT NULL
                 );""";
@@ -63,12 +63,13 @@ public class Database {
 
     public void insertMeal(Meal meal) {
         String insertQuery = """
-                INSERT INTO meals (meal, category)
-                VALUES (?, ?);""";
+                INSERT INTO meals (meal_id, meal, category)
+                VALUES (?, ?, ?);""";
         try {
             PreparedStatement st = getConn().prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-            st.setString(1, meal.getName());
-            st.setString(2, meal.getCategory().name());
+            st.setInt(1, meal.getId());
+            st.setString(2, meal.getName());
+            st.setString(3, meal.getCategory().name());
             
             int affectedRows = st.executeUpdate();
             if (affectedRows > 0) {
@@ -87,20 +88,20 @@ public class Database {
 
     private void insertIngredients(List<Ingredient> ingredients, int mealId) {
         String insertQuery = """
-                INSERT INTO ingredients (ingredient, meal_id)
-                VALUES (?, ?);""";
+                INSERT INTO ingredients (ingredient_id, ingredient, meal_id)
+                VALUES (?, ?, ?);""";
         try {
             PreparedStatement st = getConn().prepareStatement(insertQuery);
 
             for (Ingredient ingredient: ingredients) {
-                st.setString(1, ingredient.getName());
-                st.setInt(2, mealId);
+                st.setInt(1, ingredient.getId());
+                st.setString(2, ingredient.getName());
+                st.setInt(3, mealId);
 
                 st.executeUpdate();
             }
 
             st.close();
-            closeConnection();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
@@ -113,24 +114,23 @@ public class Database {
 
         String query = """
                 SELECT meal_id, meal, category
-                FROM meals
-                ORDER BY meal_id;""";
+                FROM meals;""";
 
         HashMap<Ingredient, Integer> map = new HashMap<>();
         try {
             PreparedStatement st = getConn().prepareStatement(query);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                List<Ingredient> ingredientList = findIngredientsByMealId(rs.getInt(1), ingredientsMap);
+                int id = rs.getInt(1);
+                List<Ingredient> ingredientList = findIngredientsByMealId(id, ingredientsMap);
 
                 String name = rs.getString(2);
                 Meal.Category category = Meal.Category.valueOf(rs.getString(3));
 
-                Meal meal = new Meal(name, category, ingredientList);
+                Meal meal = new Meal(name, category, ingredientList, id);
                 meals.add(meal);
             }
             closeStatement(st);
-            closeConnection();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
@@ -147,16 +147,15 @@ public class Database {
         HashMap<Ingredient, Integer> map = new HashMap<>();
 
         String query = """
-                SELECT ingredient, meal_id
-                FROM ingredients
-                ORDER BY ingredient_id;""";
+                SELECT ingredient_id, ingredient, meal_id
+                FROM ingredients;""";
 
         try {
             PreparedStatement st = getConn().prepareStatement(query);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                Ingredient ingredient = new Ingredient(rs.getString(1));
-                map.put(ingredient, rs.getInt(2));
+                Ingredient ingredient = new Ingredient(rs.getInt(1), rs.getString(2));
+                map.put(ingredient, rs.getInt(3));
             }
             closeStatement(st);
         } catch (SQLException ex) {

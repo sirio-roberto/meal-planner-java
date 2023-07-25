@@ -113,6 +113,7 @@ public class MealApp {
         public void execute() {
             System.out.println("Bye!");
             appRunning = false;
+            db.closeConnection();
         }
     }
 }

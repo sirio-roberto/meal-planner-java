@@ -5,7 +5,7 @@ import mealplanner.entities.Meal;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Random;
 
 public class Utils {
     public static List<Ingredient> getIngredientsFromStr(String ingredientsStr) {
@@ -39,5 +39,10 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static int getRandomId() {
+        Random random = new Random();
+        return random.nextInt(1000000);
     }
 }

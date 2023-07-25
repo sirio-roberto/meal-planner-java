@@ -1,18 +1,30 @@
 package mealplanner.entities;
 
 import mealplanner.entities.Ingredient;
+import mealplanner.util.Utils;
 
 import java.util.List;
 
 public class Meal {
+    private int id;
     private String name;
     private Category category;
     private List<Ingredient> ingredients;
 
     public Meal(String name, Category category, List<Ingredient> ingredients) {
+        this.id = Utils.getRandomId();
         this.name = name;
         this.category = category;
         this.ingredients = ingredients;
+    }
+
+    public Meal(String name, Category category, List<Ingredient> ingredients, int id) {
+        this(name, category, ingredients);
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
