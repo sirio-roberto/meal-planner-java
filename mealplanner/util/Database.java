@@ -4,7 +4,6 @@ import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -127,7 +126,7 @@ public class Database {
     }
 
     public HashSet<Meal> getAllMeals() {
-        HashMap<Ingredient, Integer> ingredientsMap = getAllIngredients();
+        HashSet<Ingredient> ingredientsSet = getAllIngredients();
 
         HashSet<Meal> meals = new LinkedHashSet<>();
 
@@ -139,13 +138,13 @@ public class Database {
             PreparedStatement st = getConn().prepareStatement(query);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                int id = rs.getInt(1);
-                List<Ingredient> ingredientList = findIngredientsByMealId(id, ingredientsMap);
+                int mealId = rs.getInt(1);
+                List<Ingredient> ingredientList = findIngredientsByMealId(mealId, ingredientsSet);
 
                 String name = rs.getString(2);
                 Meal.Category category = Meal.Category.valueOf(rs.getString(3));
 
-                Meal meal = new Meal(name, category, ingredientList, id);
+                Meal meal = new Meal(name, category, ingredientList, mealId);
                 meals.add(meal);
             }
             closeStatement(st);
@@ -155,16 +154,14 @@ public class Database {
         return meals;
     }
 
-    private List<Ingredient> findIngredientsByMealId(int mealId, HashMap<Ingredient, Integer> ingredientsMap) {
-        return ingredientsMap.keySet().stream()
-                .filter(k -> ingredientsMap.get(k) == mealId)
-                .sorted()
+    private List<Ingredient> findIngredientsByMealId(int mealId, HashSet<Ingredient> ingredientsSet) {
+        return ingredientsSet.stream()
+                .filter(ing -> ing.getMealId() == mealId)
                 .toList();
     }
 
-    private HashMap<Ingredient, Integer> getAllIngredients() {
-        // TODO: maybe add the meal_id to the ingredient entity
-        HashMap<Ingredient, Integer> map = new HashMap<>();
+    private HashSet<Ingredient> getAllIngredients() {
+        HashSet<Ingredient> ingredients = new LinkedHashSet<>();
 
         String query = """
                 SELECT ingredient_id, ingredient, meal_id
@@ -174,14 +171,14 @@ public class Database {
             PreparedStatement st = getConn().prepareStatement(query);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                Ingredient ingredient = new Ingredient(rs.getInt(1), rs.getString(2));
-                map.put(ingredient, rs.getInt(3));
+                Ingredient ingredient = new Ingredient(rs.getInt(1), rs.getString(2), rs.getInt(3));
+                ingredients.add(ingredient);
             }
             closeStatement(st);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        return map;
+        return ingredients;
     }
 
     public void closeConnection() {

@@ -1,18 +1,19 @@
 package mealplanner.entities;
 
-import mealplanner.util.Utils;
-
-public class Ingredient implements Comparable<Ingredient> {
+public class Ingredient {
     private int id;
     private String name;
+
+    private int mealId;
 
     public Ingredient(String name) {
         this.name = name;
     }
 
-    public Ingredient(int id, String name) {
+    public Ingredient(int id, String name, int mealId) {
         this.id = id;
         this.name = name;
+        this.mealId = mealId;
     }
 
     public int getId() {
@@ -27,13 +28,12 @@ public class Ingredient implements Comparable<Ingredient> {
         return name;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public int getMealId() {
+        return mealId;
     }
 
     @Override
-    public int compareTo(Ingredient other) {
-        return Integer.compare(this.getId(), other.getId());
+    public String toString() {
+        return name;
     }
 }
