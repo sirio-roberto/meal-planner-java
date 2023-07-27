@@ -2,7 +2,7 @@ package mealplanner.entities;
 
 import mealplanner.util.Utils;
 
-public class Ingredient {
+public class Ingredient implements Comparable<Ingredient> {
     private int id;
     private String name;
 
@@ -30,5 +30,10 @@ public class Ingredient {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public int compareTo(Ingredient other) {
+        return Integer.compare(this.getId(), other.getId());
     }
 }

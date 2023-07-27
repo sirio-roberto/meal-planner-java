@@ -158,6 +158,7 @@ public class Database {
     private List<Ingredient> findIngredientsByMealId(int mealId, HashMap<Ingredient, Integer> ingredientsMap) {
         return ingredientsMap.keySet().stream()
                 .filter(k -> ingredientsMap.get(k) == mealId)
+                .sorted()
                 .toList();
     }
 
