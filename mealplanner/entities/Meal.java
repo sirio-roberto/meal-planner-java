@@ -12,7 +12,6 @@ public class Meal {
     private List<Ingredient> ingredients;
 
     public Meal(String name, Category category, List<Ingredient> ingredients) {
-        this.id = Utils.getRandomId();
         this.name = name;
         this.category = category;
         this.ingredients = ingredients;
@@ -25,6 +24,10 @@ public class Meal {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

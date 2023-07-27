@@ -40,9 +40,4 @@ public class Utils {
         }
         return false;
     }
-
-    public static int getRandomId() {
-        Random random = new Random();
-        return random.nextInt(1000000);
-    }
 }

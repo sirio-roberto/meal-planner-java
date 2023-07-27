@@ -17,6 +17,7 @@ public class Database {
 
     public Database () {
         try {
+            createIdSequences();
             createMealsTable();
             createIngredientsTable();
         } catch (SQLException ex) {
@@ -35,12 +36,23 @@ public class Database {
         return conn;
     }
 
+    private void createIdSequences() throws SQLException {
+        String mealsQuery = "CREATE SEQUENCE IF NOT EXISTS meal_id_seq;";
+        String ingredientsQuery = "CREATE SEQUENCE IF NOT EXISTS ingredient_id_seq";
+
+        Statement statement = getConn().createStatement();
+        statement.executeUpdate(mealsQuery);
+        statement.executeUpdate(ingredientsQuery);
+        closeStatement(statement);
+    }
+
+    // TODO: refactor using foreign key
     private void createIngredientsTable() throws SQLException {
         String query = """
                 CREATE TABLE IF NOT EXISTS ingredients (
-                    ingredient_id integer PRIMARY KEY,
+                    ingredient_id INTEGER PRIMARY KEY,
                     ingredient VARCHAR(100) NOT NULL,
-                    meal_id integer NOT NULL
+                    meal_id INTEGER NOT NULL
                 );""";
 
         Statement statement = getConn().createStatement();
@@ -51,7 +63,7 @@ public class Database {
     private void createMealsTable() throws SQLException {
         String query = """
                 CREATE TABLE IF NOT EXISTS meals (
-                    meal_id integer PRIMARY KEY,
+                    meal_id INTEGER PRIMARY KEY,
                     meal VARCHAR(100) NOT NULL,
                     category VARCHAR(20) NOT NULL
                 );""";
@@ -63,19 +75,19 @@ public class Database {
 
     public void insertMeal(Meal meal) {
         String insertQuery = """
-                INSERT INTO meals (meal_id, meal, category)
-                VALUES (?, ?, ?);""";
+                INSERT INTO meals (meal, category, meal_id)
+                VALUES (?, ?, nextval('meal_id_seq'));""";
         try {
             PreparedStatement st = getConn().prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
-            st.setInt(1, meal.getId());
-            st.setString(2, meal.getName());
-            st.setString(3, meal.getCategory().name());
+            st.setString(1, meal.getName());
+            st.setString(2, meal.getCategory().name());
             
             int affectedRows = st.executeUpdate();
             if (affectedRows > 0) {
                 ResultSet rs = st.getGeneratedKeys();
                 if (rs.next()) {
                     int mealId = rs.getInt(1);
+                    meal.setId(mealId);
                     insertIngredients(meal.getIngredients(), mealId);
                 }
                 closeResultSet(rs);
@@ -88,17 +100,24 @@ public class Database {
 
     private void insertIngredients(List<Ingredient> ingredients, int mealId) {
         String insertQuery = """
-                INSERT INTO ingredients (ingredient_id, ingredient, meal_id)
-                VALUES (?, ?, ?);""";
+                INSERT INTO ingredients (ingredient, meal_id, ingredient_id)
+                VALUES (?, ?, nextval('ingredient_id_seq'));""";
         try {
-            PreparedStatement st = getConn().prepareStatement(insertQuery);
+            PreparedStatement st = getConn().prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
 
             for (Ingredient ingredient: ingredients) {
-                st.setInt(1, ingredient.getId());
-                st.setString(2, ingredient.getName());
-                st.setInt(3, mealId);
+                st.setString(1, ingredient.getName());
+                st.setInt(2, mealId);
 
-                st.executeUpdate();
+                int affectedRows = st.executeUpdate();
+                if (affectedRows > 0) {
+                    ResultSet rs = st.getGeneratedKeys();
+                    if (rs.next()) {
+                        int ingredientId = rs.getInt(1);
+                        ingredient.setId(ingredientId);
+                    }
+                    closeResultSet(rs);
+                }
             }
 
             st.close();
@@ -116,7 +135,6 @@ public class Database {
                 SELECT meal_id, meal, category
                 FROM meals;""";
 
-        HashMap<Ingredient, Integer> map = new HashMap<>();
         try {
             PreparedStatement st = getConn().prepareStatement(query);
             ResultSet rs = st.executeQuery();
@@ -144,6 +162,7 @@ public class Database {
     }
 
     private HashMap<Ingredient, Integer> getAllIngredients() {
+        // TODO: maybe add the meal_id to the ingredient entity
         HashMap<Ingredient, Integer> map = new HashMap<>();
 
         String query = """

@@ -7,7 +7,6 @@ public class Ingredient {
     private String name;
 
     public Ingredient(String name) {
-        this.id = Utils.getRandomId();
         this.name = name;
     }
 
@@ -18,6 +17,10 @@ public class Ingredient {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
