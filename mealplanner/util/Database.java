@@ -125,17 +125,28 @@ public class Database {
         }
     }
 
-    public HashSet<Meal> getAllMeals() {
+    public HashSet<Meal> findMealsByCategory(String catName) {
+        String query;
         HashSet<Ingredient> ingredientsSet = getAllIngredients();
 
         HashSet<Meal> meals = new LinkedHashSet<>();
 
-        String query = """
+        if (catName != null) {
+            query = """
+                SELECT meal_id, meal, category
+                FROM meals
+                WHERE category = ?;""";
+        } else {
+            query = """
                 SELECT meal_id, meal, category
                 FROM meals;""";
+        }
 
         try {
             PreparedStatement st = getConn().prepareStatement(query);
+            if (catName != null) {
+                st.setString(1, catName);
+            }
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
                 int mealId = rs.getInt(1);
@@ -152,6 +163,10 @@ public class Database {
             System.out.println(ex.getMessage());
         }
         return meals;
+    }
+
+    public HashSet<Meal> getAllMeals() {
+        return findMealsByCategory(null);
     }
 
     private List<Ingredient> findIngredientsByMealId(int mealId, HashSet<Ingredient> ingredientsSet) {

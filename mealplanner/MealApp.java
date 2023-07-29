@@ -96,10 +96,19 @@ public class MealApp {
     class ShowCommand implements Command {
         @Override
         public void execute() {
-            if (meals.isEmpty()) {
-                System.out.println("No meals saved. Add a meal first.");
+            System.out.println("Which category do you want to print (breakfast, lunch, dinner)?");
+            String categoryStr = inputHandler.getNextString();
+            while (Utils.isInvalidCategory(categoryStr)) {
+                System.out.println("Wrong meal category! Choose from: breakfast, lunch, dinner.");
+                categoryStr = inputHandler.getNextString();
+            }
+
+            HashSet<Meal> catMeals = db.findMealsByCategory(categoryStr.toUpperCase());
+            if (catMeals.isEmpty()) {
+                System.out.println("No meals found.");
             } else {
-                for (Meal meal : meals) {
+                System.out.printf("Category: %s\n", categoryStr);
+                for (Meal meal : catMeals) {
                     System.out.println();
                     System.out.println(meal);
                 }

@@ -51,10 +51,8 @@ public class Meal {
     @Override
     public String toString() {
         return String.format("""
-                Category: %s
                 Name: %s
                 %s""",
-                category.toString(),
                 name,
                 getIngredientsList());
     }
