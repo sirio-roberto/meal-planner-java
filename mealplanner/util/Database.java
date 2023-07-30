@@ -27,6 +27,8 @@ public class Database {
                 VALUES (?, ?, ?, ?);""";
     private final String DELETE_ALL_PLANS = "DELETE FROM plan;";
 
+    private final String SELECT_PLANS = "SELECT * FROM plan;";
+
     private Connection conn;
 
     public Database () {
@@ -172,6 +174,35 @@ public class Database {
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    public HashSet<Plan> getAllPlans() {
+        HashSet<Plan> plans = new LinkedHashSet<>();
+        HashSet<Meal> allMeals = getAllMeals();
+
+        try {
+            PreparedStatement st = getConn().prepareStatement(SELECT_PLANS);
+
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Plan.Weekday weekday = Plan.Weekday.valueOf(rs.getString("weekday"));
+                int mealId = rs.getInt("meal_id");
+                Meal meal = getMealById(allMeals, mealId);
+
+                plans.add(new Plan(meal, weekday));
+            }
+            closeStatement(st);
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return plans;
+    }
+
+    private Meal getMealById(HashSet<Meal> meals, int mealId) {
+        return meals.stream()
+                .filter(m -> m.getId() == mealId)
+                .findAny()
+                .orElse(null);
     }
 
     public HashSet<Meal> findMealsByCategory(String catName) {

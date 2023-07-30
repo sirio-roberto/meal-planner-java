@@ -2,9 +2,12 @@ package mealplanner.util;
 
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
+import mealplanner.entities.Plan;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Utils {
     public static List<Ingredient> getIngredientsFromStr(String ingredientsStr) {
@@ -52,5 +55,43 @@ public class Utils {
                             .filter(m -> m.getName().equals(mealName))
                             .findAny()
                             .orElse(null);
+    }
+
+    public static String getShoppingList(HashSet<Plan> plans) {
+        Map<String, Integer> ingredientsAndQty = new LinkedHashMap<>();
+
+        List<Ingredient> allIngredients = plans.stream()
+                .map(Plan::getMeal)
+                .map(Meal::getIngredients)
+                .flatMap(List::stream)
+                .toList();
+
+        for (Ingredient ingredient: allIngredients) {
+            String ingName = ingredient.getName();
+            if (ingredientsAndQty.containsKey(ingName)) {
+                ingredientsAndQty.put(ingName, ingredientsAndQty.get(ingName) + 1);
+            } else {
+                ingredientsAndQty.put(ingName, 1);
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (Map.Entry<String, Integer> ingredient: ingredientsAndQty.entrySet()) {
+            result.append(ingredient.getKey());
+            if (ingredient.getValue() > 1) {
+                result.append(" x").append(ingredient.getValue());
+            }
+            result.append("\n");
+        }
+        return result.toString();
+    }
+
+    public static void saveStringToFile(String string, String fileName) {
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(string);
+            System.out.println("Saved!");
+        } catch (IOException ex) {
+            System.out.println("Error while saving file!");
+        }
     }
 }

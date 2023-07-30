@@ -1,6 +1,5 @@
 package mealplanner;
 
-import jdk.jshell.execution.Util;
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
 import mealplanner.entities.Plan;
@@ -11,7 +10,8 @@ import mealplanner.util.Utils;
 import java.util.*;
 
 public class MealApp {
-    private HashSet<Meal> meals;
+    private final HashSet<Meal> meals;
+    HashSet<Plan> plans;
     private boolean appRunning;
     private final HashMap<String, Command> commands;
     public InputHandler inputHandler = new InputHandler();
@@ -21,12 +21,14 @@ public class MealApp {
         db = new Database();
 
         this.meals = db.getAllMeals();
+        this.plans = db.getAllPlans();
         appRunning = false;
 
         commands = new LinkedHashMap<>();
         commands.put("add", new AddCommand());
         commands.put("show", new ShowCommand());
         commands.put("plan", new PlanCommand());
+        commands.put("save", new SaveCommand());
         commands.put("exit", new ExitCommand());
     }
 
@@ -124,7 +126,7 @@ public class MealApp {
         @Override
         public void execute() {
             db.deleteAllPlans();
-            HashSet<Plan> plans = new LinkedHashSet<>();
+            plans.clear();
 
             for (Plan.Weekday weekday: Plan.Weekday.values()) {
                 System.out.println(weekday);
@@ -156,6 +158,25 @@ public class MealApp {
                     }
                 }
                 System.out.println();
+            }
+        }
+    }
+
+    class SaveCommand implements Command {
+
+        @Override
+        public void execute() {
+            if (plans.isEmpty()) {
+                System.out.println("Unable to save. Plan your meals first.");
+            } else {
+                System.out.println("Input a filename:");
+                String fileName = inputHandler.getNextString();
+                if (!fileName.isBlank()) {
+                    String shoppingList = Utils.getShoppingList(plans);
+                    Utils.saveStringToFile(shoppingList, fileName);
+                } else {
+                    System.out.println("Invalid file name!");
+                }
             }
         }
     }
