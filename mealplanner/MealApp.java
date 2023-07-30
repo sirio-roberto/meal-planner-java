@@ -121,10 +121,11 @@ public class MealApp {
     }
 
     class PlanCommand implements Command {
-        HashSet<Plan> plans = new LinkedHashSet<>();
-
         @Override
         public void execute() {
+            db.deleteAllPlans();
+            HashSet<Plan> plans = new LinkedHashSet<>();
+
             for (Plan.Weekday weekday: Plan.Weekday.values()) {
                 System.out.println(weekday);
                 for (Meal.Category category: Meal.Category.values()) {
@@ -139,7 +140,9 @@ public class MealApp {
                         userOption = inputHandler.getNextString();
                         chosenMeal = Utils.getMealFromName(orderedMeals, userOption);
                     }
-                    plans.add(new Plan(chosenMeal, weekday));
+                    Plan plan = new Plan(chosenMeal, weekday);
+                    plans.add(plan);
+                    db.insertPlan(plan);
                 }
                 System.out.printf("Yeah! We planned the meals for %s.\n\n", weekday);
             }

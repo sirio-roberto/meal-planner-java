@@ -2,6 +2,7 @@ package mealplanner.util;
 
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
+import mealplanner.entities.Plan;
 
 import java.sql.*;
 import java.util.HashSet;
@@ -12,6 +13,20 @@ public class Database {
     private final String DB_URL = "jdbc:postgresql:meals_db";
     private final String USER = "postgres";
     private final String PASS = "1111";
+
+    private final String CREATE_PLAN_TABLE = """
+                CREATE TABLE IF NOT EXISTS plan (
+                    plan_id SERIAL PRIMARY KEY,
+                    meal_name VARCHAR(100) NOT NULL,
+                    meal_category VARCHAR(20) NOT NULL,
+                    weekday VARCHAR(20) NOT NULL,
+                    meal_id INTEGER NOT NULL
+                );""";
+    private final String INSERT_PLAN = """
+                INSERT INTO plan (meal_name, meal_category, weekday, meal_id)
+                VALUES (?, ?, ?, ?);""";
+    private final String DELETE_ALL_PLANS = "DELETE FROM plan;";
+
     private Connection conn;
 
     public Database () {
@@ -19,6 +34,7 @@ public class Database {
             createIdSequences();
             createMealsTable();
             createIngredientsTable();
+            createPlanTable();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
@@ -70,6 +86,39 @@ public class Database {
         Statement statement = getConn().createStatement();
         statement.executeUpdate(query);
         closeStatement(statement);
+    }
+
+    private void createPlanTable() throws SQLException {
+        Statement statement = getConn().createStatement();
+        statement.executeUpdate(CREATE_PLAN_TABLE);
+        closeStatement(statement);
+    }
+
+    public void insertPlan(Plan plan) {
+        try {
+            PreparedStatement st = getConn().prepareStatement(INSERT_PLAN);
+            Meal meal = plan.getMeal();
+
+            st.setString(1, meal.getName());
+            st.setString(2, meal.getCategory().name());
+            st.setString(3, plan.getWeekday().name());
+            st.setInt(4, meal.getId());
+
+            st.executeUpdate();
+            st.close();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void deleteAllPlans() {
+        try {
+            Statement st = getConn().createStatement();
+            st.executeUpdate(DELETE_ALL_PLANS);
+            st.close();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
     public void insertMeal(Meal meal) {
