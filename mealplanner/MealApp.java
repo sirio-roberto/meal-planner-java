@@ -1,7 +1,9 @@
 package mealplanner;
 
+import jdk.jshell.execution.Util;
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
+import mealplanner.entities.Plan;
 import mealplanner.util.Database;
 import mealplanner.util.InputHandler;
 import mealplanner.util.Utils;
@@ -24,6 +26,7 @@ public class MealApp {
         commands = new LinkedHashMap<>();
         commands.put("add", new AddCommand());
         commands.put("show", new ShowCommand());
+        commands.put("plan", new PlanCommand());
         commands.put("exit", new ExitCommand());
     }
 
@@ -117,7 +120,44 @@ public class MealApp {
         }
     }
 
-    class ExitCommand implements Command{
+    class PlanCommand implements Command {
+        HashSet<Plan> plans = new LinkedHashSet<>();
+
+        @Override
+        public void execute() {
+            for (Plan.Weekday weekday: Plan.Weekday.values()) {
+                System.out.println(weekday);
+                for (Meal.Category category: Meal.Category.values()) {
+                    List<Meal> orderedMeals = Utils.getMealsByCategory(meals, category);
+
+                    orderedMeals.forEach(m -> System.out.println(m.getName()));
+                    System.out.printf("Choose the %s for %s from the list above:\n", category, weekday);
+                    String userOption = inputHandler.getNextString();
+                    Meal chosenMeal = Utils.getMealFromName(orderedMeals, userOption);
+                    while (chosenMeal == null) {
+                        System.out.print("This meal doesn’t exist. Choose a meal from the list above.\n");
+                        userOption = inputHandler.getNextString();
+                        chosenMeal = Utils.getMealFromName(orderedMeals, userOption);
+                    }
+                    plans.add(new Plan(chosenMeal, weekday));
+                }
+                System.out.printf("Yeah! We planned the meals for %s.\n\n", weekday);
+            }
+
+            for (Plan.Weekday weekday: Plan.Weekday.values()) {
+                System.out.println(weekday);
+                for (Plan plan: plans) {
+                    if (plan.getWeekday().equals(weekday)) {
+                        Meal meal = plan.getMeal();
+                        System.out.printf("%s: %s\n", meal.getCategory().getTitledName(), meal.getName());
+                    }
+                }
+                System.out.println();
+            }
+        }
+    }
+
+    class ExitCommand implements Command {
         @Override
         public void execute() {
             System.out.println("Bye!");

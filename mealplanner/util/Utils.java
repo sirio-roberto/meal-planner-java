@@ -3,9 +3,8 @@ package mealplanner.util;
 import mealplanner.entities.Ingredient;
 import mealplanner.entities.Meal;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
     public static List<Ingredient> getIngredientsFromStr(String ingredientsStr) {
@@ -39,5 +38,19 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static List<Meal> getMealsByCategory(HashSet<Meal> meals, Meal.Category category) {
+        return meals.stream()
+                            .filter(m -> m.getCategory().equals(category))
+                            .sorted(Comparator.comparing(Meal::getName))
+                            .toList();
+    }
+
+    public static Meal getMealFromName(List<Meal> meals, String mealName) {
+        return meals.stream()
+                            .filter(m -> m.getName().equals(mealName))
+                            .findAny()
+                            .orElse(null);
     }
 }

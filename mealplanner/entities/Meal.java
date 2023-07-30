@@ -60,6 +60,10 @@ public class Meal {
     public enum Category {
         BREAKFAST, LUNCH, DINNER;
 
+        public String getTitledName() {
+            return name().toUpperCase().charAt(0) + name().toLowerCase().substring(1);
+        }
+
         @Override
         public String toString() {
             return name().toLowerCase();
