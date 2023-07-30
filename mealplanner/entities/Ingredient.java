@@ -2,7 +2,7 @@ package mealplanner.entities;
 
 public class Ingredient {
     private int id;
-    private String name;
+    private final String name;
 
     private int mealId;
 

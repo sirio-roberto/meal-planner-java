@@ -7,7 +7,6 @@ import mealplanner.entities.Plan;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class Utils {
     public static List<Ingredient> getIngredientsFromStr(String ingredientsStr) {

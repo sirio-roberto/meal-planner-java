@@ -12,12 +12,4 @@ public class InputHandler {
         String input = scanner.nextLine();
         return input != null ? input.trim() : "";
     }
-
-    public int getNextInt() {
-        String nextString = getNextString();
-        if (nextString.matches("\\d+")) {
-            return Integer.parseInt(nextString);
-        }
-        return 0;
-    }
 }

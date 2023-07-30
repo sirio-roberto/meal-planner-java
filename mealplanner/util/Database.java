@@ -14,6 +14,20 @@ public class Database {
     private final String USER = "postgres";
     private final String PASS = "1111";
 
+    private final String CREATE_MEALS_TABLE = """
+                CREATE TABLE IF NOT EXISTS meals (
+                    meal_id INTEGER PRIMARY KEY,
+                    meal VARCHAR(100) NOT NULL,
+                    category VARCHAR(20) NOT NULL
+                );""";
+
+    private final String CREATE_INGREDIENTS_TABLE = """
+                CREATE TABLE IF NOT EXISTS ingredients (
+                    ingredient_id INTEGER PRIMARY KEY,
+                    ingredient VARCHAR(100) NOT NULL,
+                    meal_id INTEGER NOT NULL
+                );""";
+
     private final String CREATE_PLAN_TABLE = """
                 CREATE TABLE IF NOT EXISTS plan (
                     plan_id SERIAL PRIMARY KEY,
@@ -22,12 +36,22 @@ public class Database {
                     weekday VARCHAR(20) NOT NULL,
                     meal_id INTEGER NOT NULL
                 );""";
+
+    private static final String INSERT_MEAL = """
+                INSERT INTO meals (meal, category, meal_id)
+                VALUES (?, ?, nextval('meal_id_seq'));""";
+
+    private static final String INSERT_INGREDIENT = """
+                INSERT INTO ingredients (ingredient, meal_id, ingredient_id)
+                VALUES (?, ?, nextval('ingredient_id_seq'));""";
+
     private final String INSERT_PLAN = """
                 INSERT INTO plan (meal_name, meal_category, weekday, meal_id)
                 VALUES (?, ?, ?, ?);""";
-    private final String DELETE_ALL_PLANS = "DELETE FROM plan;";
 
+    private static final String SELECT_INGREDIENTS = "SELECT * FROM ingredients;";
     private final String SELECT_PLANS = "SELECT * FROM plan;";
+    private final String DELETE_ALL_PLANS = "DELETE FROM plan;";
 
     private Connection conn;
 
@@ -65,28 +89,14 @@ public class Database {
 
     // TODO: refactor using foreign key
     private void createIngredientsTable() throws SQLException {
-        String query = """
-                CREATE TABLE IF NOT EXISTS ingredients (
-                    ingredient_id INTEGER PRIMARY KEY,
-                    ingredient VARCHAR(100) NOT NULL,
-                    meal_id INTEGER NOT NULL
-                );""";
-
         Statement statement = getConn().createStatement();
-        statement.executeUpdate(query);
+        statement.executeUpdate(CREATE_INGREDIENTS_TABLE);
         closeStatement(statement);
     }
 
     private void createMealsTable() throws SQLException {
-        String query = """
-                CREATE TABLE IF NOT EXISTS meals (
-                    meal_id INTEGER PRIMARY KEY,
-                    meal VARCHAR(100) NOT NULL,
-                    category VARCHAR(20) NOT NULL
-                );""";
-
         Statement statement = getConn().createStatement();
-        statement.executeUpdate(query);
+        statement.executeUpdate(CREATE_MEALS_TABLE);
         closeStatement(statement);
     }
 
@@ -124,11 +134,8 @@ public class Database {
     }
 
     public void insertMeal(Meal meal) {
-        String insertQuery = """
-                INSERT INTO meals (meal, category, meal_id)
-                VALUES (?, ?, nextval('meal_id_seq'));""";
         try {
-            PreparedStatement st = getConn().prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement st = getConn().prepareStatement(INSERT_MEAL, Statement.RETURN_GENERATED_KEYS);
             st.setString(1, meal.getName());
             st.setString(2, meal.getCategory().name());
             
@@ -149,11 +156,8 @@ public class Database {
     }
 
     private void insertIngredients(List<Ingredient> ingredients, int mealId) {
-        String insertQuery = """
-                INSERT INTO ingredients (ingredient, meal_id, ingredient_id)
-                VALUES (?, ?, nextval('ingredient_id_seq'));""";
         try {
-            PreparedStatement st = getConn().prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement st = getConn().prepareStatement(INSERT_INGREDIENT, Statement.RETURN_GENERATED_KEYS);
 
             for (Ingredient ingredient: ingredients) {
                 st.setString(1, ingredient.getName());
@@ -258,15 +262,14 @@ public class Database {
     private HashSet<Ingredient> getAllIngredients() {
         HashSet<Ingredient> ingredients = new LinkedHashSet<>();
 
-        String query = """
-                SELECT ingredient_id, ingredient, meal_id
-                FROM ingredients;""";
-
         try {
-            PreparedStatement st = getConn().prepareStatement(query);
+            PreparedStatement st = getConn().prepareStatement(SELECT_INGREDIENTS);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                Ingredient ingredient = new Ingredient(rs.getInt(1), rs.getString(2), rs.getInt(3));
+                Ingredient ingredient = new Ingredient(
+                        rs.getInt("ingredient_id"),
+                        rs.getString("ingredient"),
+                        rs.getInt("meal_id"));
                 ingredients.add(ingredient);
             }
             closeStatement(st);

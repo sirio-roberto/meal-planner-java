@@ -15,7 +15,7 @@ public class MealApp {
     private boolean appRunning;
     private final HashMap<String, Command> commands;
     public InputHandler inputHandler = new InputHandler();
-    private Database db;
+    private final Database db;
 
     public MealApp() {
         db = new Database();
@@ -138,7 +138,7 @@ public class MealApp {
                     String userOption = inputHandler.getNextString();
                     Meal chosenMeal = Utils.getMealFromName(orderedMeals, userOption);
                     while (chosenMeal == null) {
-                        System.out.print("This meal doesn’t exist. Choose a meal from the list above.\n");
+                        System.out.print("This meal doesn't exist. Choose a meal from the list above.\n");
                         userOption = inputHandler.getNextString();
                         chosenMeal = Utils.getMealFromName(orderedMeals, userOption);
                     }

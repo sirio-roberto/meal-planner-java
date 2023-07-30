@@ -1,15 +1,12 @@
 package mealplanner.entities;
 
-import mealplanner.entities.Ingredient;
-import mealplanner.util.Utils;
-
 import java.util.List;
 
 public class Meal {
     private int id;
-    private String name;
-    private Category category;
-    private List<Ingredient> ingredients;
+    private final String name;
+    private final Category category;
+    private final List<Ingredient> ingredients;
 
     public Meal(String name, Category category, List<Ingredient> ingredients) {
         this.name = name;
